@@ -1,0 +1,36 @@
+We apply the following patches to the upstream source code, both in
+libtommath/bn_s_mp_rand_platform.c:
+
+1) Guard the platform-specific calls in s_mp_rand_platform() with the
+   preprocessor.
+
+   Upstream guards these calls with MP_HAS() and relies on the compiler to
+   eliminate the calls to the functions that are not defined for the target
+   platform. Clang does not do this without optimization, which makes
+   linking fail (upstream's CMake build works around this by forcing -O1).
+
+2) Fill the entire buffer in s_read_urandom() when read() returns less than
+   requested.
+
+   The read loop always reads into the beginning of the buffer, leaving the
+   rest of it without random data. This is a backport of upstream commit
+   528fdb0 (s_mp_rand_platform.c: s_read_urandom: correctly handle split
+   read), which is not yet in a release.
+
+The patches were made as follows:
+
+$ cd libtommath/
+$ mv bn_s_mp_rand_platform.c bn_s_mp_rand_platform.c.orig
+$ cp -H bn_s_mp_rand_platform.c.orig bn_s_mp_rand_platform.c
+$ edit bn_s_mp_rand_platform.c
+$ diff -u bn_s_mp_rand_platform.c.orig bn_s_mp_rand_platform.c \
+  >bn_s_mp_rand_platform.c.patch
+
+To re-apply them after upgrading the upstream submodule:
+
+$ cd libtommath/
+$ cp -H bn_s_mp_rand_platform.c.orig bn_s_mp_rand_platform.c
+$ patch <bn_s_mp_rand_platform.c.patch
+
+Upstream renamed this file to s_mp_rand_platform.c on its develop branch,
+where patch 2 is already applied and patch 1 is still required.

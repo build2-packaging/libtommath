@@ -1,0 +1,46 @@
+--- bn_s_mp_rand_platform.c.orig
++++ bn_s_mp_rand_platform.c
+@@ -96,7 +96,7 @@
+    if (fd == -1) return MP_ERR;
+ 
+    while (n > 0u) {
+-      ssize_t ret = read(fd, p, n);
++      ssize_t ret = read(fd, q, n);
+       if (ret < 0) {
+          if (errno == EINTR) {
+             continue;
+@@ -134,14 +134,29 @@
+ mp_err s_read_urandom(void *p, size_t n);
+ mp_err s_read_ltm_rng(void *p, size_t n);
+ 
++/* build2: each call below is compiled only if its function is defined for
++ * the target platform. Upstream guards these calls with MP_HAS() and relies
++ * on the compiler to eliminate the calls to undefined functions, which Clang
++ * does not do without optimization.
++ */
+ mp_err s_mp_rand_platform(void *p, size_t n)
+ {
+    mp_err err = MP_ERR;
+-   if ((err != MP_OKAY) && MP_HAS(S_READ_ARC4RANDOM)) err = s_read_arc4random(p, n);
+-   if ((err != MP_OKAY) && MP_HAS(S_READ_WINCSP))     err = s_read_wincsp(p, n);
+-   if ((err != MP_OKAY) && MP_HAS(S_READ_GETRANDOM))  err = s_read_getrandom(p, n);
+-   if ((err != MP_OKAY) && MP_HAS(S_READ_URANDOM))    err = s_read_urandom(p, n);
+-   if ((err != MP_OKAY) && MP_HAS(S_READ_LTM_RNG))    err = s_read_ltm_rng(p, n);
++#ifdef BN_S_READ_ARC4RANDOM_C
++   if (err != MP_OKAY) err = s_read_arc4random(p, n);
++#endif
++#ifdef BN_S_READ_WINCSP_C
++   if (err != MP_OKAY) err = s_read_wincsp(p, n);
++#endif
++#ifdef BN_S_READ_GETRANDOM_C
++   if (err != MP_OKAY) err = s_read_getrandom(p, n);
++#endif
++#ifdef BN_S_READ_URANDOM_C
++   if (err != MP_OKAY) err = s_read_urandom(p, n);
++#endif
++#ifdef BN_S_READ_LTM_RNG_C
++   if (err != MP_OKAY) err = s_read_ltm_rng(p, n);
++#endif
+    return err;
+ }
+ 
