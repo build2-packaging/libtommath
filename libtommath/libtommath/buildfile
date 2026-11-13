@@ -27,6 +27,13 @@ if ($c.class == 'msvc')
 if ($c.target.system == 'mingw32')
   c.loptions += -Wl,--export-all-symbols
 
+# Windows random number source (CryptGenRandom()) is provided by
+# advapi32.lib, which upstream links explicitly (see makefile.msvc). MinGW
+# links it by default.
+#
+if ($c.target.system == 'win32-msvc')
+  c.libs += advapi32.lib
+
 # Export options.
 #
 lib{tommath}: c.export.poptions = "-I$src_pfx"
