@@ -16,6 +16,14 @@ c.poptions =+ "-I$src_pfx"
 if ($c.target.system == 'win32-msvc')
   c.poptions += -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE
 
+# MP_HAS() stringizes macros that are defined empty for enabled features,
+# which MSVC preprocessor warns about (C4003). Resulting empty string is
+# exactly what MP_HAS() tests for. We have to disable this warning since
+# build2 treats preprocessor warnings as errors with MSVC.
+#
+if ($c.class == 'msvc')
+  c.coptions += /wd4003
+
 if ($c.target.system == 'mingw32')
   c.loptions += -Wl,--export-all-symbols
 
