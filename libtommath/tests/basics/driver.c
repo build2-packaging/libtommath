@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <errno.h>
 #include <string.h>
 
 #include <tommath.h>
@@ -7,67 +5,53 @@
 #undef NDEBUG
 #include <assert.h>
 
-#ifdef _WIN32
-#define tmpfile mytmpfile
-static FILE *mytmpfile ();
-#endif
-
 int main ()
 {
-  char b[256];
+  mp_int a, b, c;
+  char s[128];
+  mp_bool p;
 
-  /* Basics.
+  assert (mp_init_multi (&a, &b, &c, NULL) == MP_OKAY);
+
+  /* Multiply two numbers that don't fit into any built-in integer type and
+   * convert the result back to its decimal representation.
    */
   {
-    FILE *o = tmpfile ();
-    assert (say_hello (o, "World") > 0);
-    rewind (o);
-    assert (fread (b, 1, sizeof (b), o) == 14 &&
-            strncmp (b, "Hello, World!\n", 14) == 0);
-    fclose (o);
+    assert (mp_read_radix (&a, "123456789012345678901234567890", 10) ==
+            MP_OKAY);
+    assert (mp_read_radix (&b, "987654321098765432109876543210", 10) ==
+            MP_OKAY);
+
+    assert (mp_mul (&a, &b, &c) == MP_OKAY);
+
+    assert (mp_to_radix (&c, s, sizeof (s), NULL, 10) == MP_OKAY);
+    assert (strcmp (s,
+                    "1219326311370217952261850327336229233322374638011112"
+                    "63526900") == 0);
   }
 
-  /* Empty name.
+  /* Test the Mersenne number 2^127 - 1 (prime) and its neighbor 2^127 + 1
+   * (divisible by 3) for primality.
    */
   {
-    FILE *o = tmpfile ();
-    assert (say_hello (o, "") < 0 && errno == EINVAL);
-    fclose (o);
+    int t = mp_prime_rabin_miller_trials (127);
+
+    assert (mp_2expt (&a, 127) == MP_OKAY);
+    assert (mp_sub_d (&a, 1, &b) == MP_OKAY);
+    assert (mp_add_d (&a, 1, &c) == MP_OKAY);
+
+    assert (mp_to_radix (&b, s, sizeof (s), NULL, 16) == MP_OKAY);
+    assert (strcmp (s, "7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") == 0);
+
+    assert (mp_prime_is_prime (&b, t, &p) == MP_OKAY && p == MP_YES);
+    assert (mp_prime_is_prime (&c, t, &p) == MP_OKAY && p == MP_NO);
   }
+
+  /* Error reporting.
+   */
+  assert (strcmp (mp_error_to_string (MP_MEM), "Out of heap") == 0);
+
+  mp_clear_multi (&a, &b, &c, NULL);
 
   return 0;
 }
-
-#ifdef _WIN32
-#include <windows.h>
-#include <fcntl.h>
-#include <io.h>
-
-FILE *mytmpfile ()
-{
-  char d[MAX_PATH + 1], p[MAX_PATH + 1];
-  if (GetTempPathA (sizeof (d), d) == 0 ||
-      GetTempFileNameA (d, "tmp", 0, p) == 0)
-    return NULL;
-
-  HANDLE h = CreateFileA (p,
-                          GENERIC_READ | GENERIC_WRITE,
-                          0,
-                          NULL,
-                          CREATE_ALWAYS,
-                          FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
-                          NULL);
-  if (h == INVALID_HANDLE_VALUE)
-    return NULL;
-
-  int fd = _open_osfhandle ((intptr_t) h, _O_RDWR);
-  if (fd == -1)
-    return NULL;
-
-  FILE *f = _fdopen (fd, "wb+");
-  if (f == NULL)
-    _close (fd);
-
-  return f;
-}
-#endif
