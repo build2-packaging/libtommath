@@ -14,9 +14,9 @@
  mp_err s_read_ltm_rng(void *p, size_t n);
  
 +/* build2: each call below is compiled only if its function is defined for
-+ * the target platform. Upstream guards these calls with MP_HAS() and relies
-+ * on the compiler to eliminate the calls to undefined functions, which Clang
-+ * does not do without optimization.
++ * target platform. Upstream guards these calls with MP_HAS() and relies on
++ * compiler to eliminate calls to undefined functions, which Clang does not
++ * do without optimization.
 + */
  mp_err s_mp_rand_platform(void *p, size_t n)
  {

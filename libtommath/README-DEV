@@ -1,36 +1,47 @@
-We apply the following patches to the upstream source code, both in
+We apply the following patches to upstream source code.
+
 libtommath/bn_s_mp_rand_platform.c:
 
-1) Guard the platform-specific calls in s_mp_rand_platform() with the
-   preprocessor.
+1) Guard platform-specific calls in s_mp_rand_platform() with preprocessor.
 
-   Upstream guards these calls with MP_HAS() and relies on the compiler to
-   eliminate the calls to the functions that are not defined for the target
-   platform. Clang does not do this without optimization, which makes
-   linking fail (upstream's CMake build works around this by forcing -O1).
+   Upstream guards these calls with MP_HAS() and relies on compiler to
+   eliminate calls to functions not defined for target platform. Clang does
+   not do this without optimization, which makes linking fail (upstream's
+   CMake build works around this by forcing -O1).
 
-2) Fill the entire buffer in s_read_urandom() when read() returns less than
+2) Fill entire buffer in s_read_urandom() when read() returns less than
    requested.
 
-   The read loop always reads into the beginning of the buffer, leaving the
-   rest of it without random data. This is a backport of upstream commit
-   528fdb0 (s_mp_rand_platform.c: s_read_urandom: correctly handle split
-   read), which is not yet in a release.
+   Read loop always reads into beginning of buffer, leaving rest of it
+   without random data. This is a backport of upstream commit 528fdb0
+   (s_mp_rand_platform.c: s_read_urandom: correctly handle split read),
+   which is not yet in a release.
 
-The patches were made as follows:
+libtommath/bn_mp_set_double.c:
+
+3) Compile mp_set_double() on all architectures with IEEE 754 doubles.
+
+   Upstream only compiles this function if compiler defines __STDC_IEC_559__
+   or __GCC_IEC_559, which MSVC and Clang on macOS and FreeBSD do not. On
+   such platforms <tommath.h> declares mp_set_double() but library does not
+   define it. This is a backport of upstream commit 4e90f31 (Build+test
+   bn_mp_set_double.c on more platforms), which is not yet in a release.
+
+Patches were made as follows (using bn_mp_set_double.c as example):
 
 $ cd libtommath/
-$ mv bn_s_mp_rand_platform.c bn_s_mp_rand_platform.c.orig
-$ cp -H bn_s_mp_rand_platform.c.orig bn_s_mp_rand_platform.c
-$ edit bn_s_mp_rand_platform.c
-$ diff -u bn_s_mp_rand_platform.c.orig bn_s_mp_rand_platform.c \
-  >bn_s_mp_rand_platform.c.patch
+$ mv bn_mp_set_double.c bn_mp_set_double.c.orig
+$ cp -H bn_mp_set_double.c.orig bn_mp_set_double.c
+$ edit bn_mp_set_double.c
+$ diff -u bn_mp_set_double.c.orig bn_mp_set_double.c >bn_mp_set_double.c.patch
 
-To re-apply them after upgrading the upstream submodule:
+To re-apply them after upgrading upstream submodule:
 
 $ cd libtommath/
 $ cp -H bn_s_mp_rand_platform.c.orig bn_s_mp_rand_platform.c
 $ patch <bn_s_mp_rand_platform.c.patch
+$ cp -H bn_mp_set_double.c.orig bn_mp_set_double.c
+$ patch <bn_mp_set_double.c.patch
 
-Upstream renamed this file to s_mp_rand_platform.c on its develop branch,
-where patch 2 is already applied and patch 1 is still required.
+Upstream dropped bn_ prefix from these file names on its develop branch,
+where patches 2 and 3 are already applied and patch 1 is still required.

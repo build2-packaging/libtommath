@@ -1,6 +1,6 @@
 # Note that upstream keeps all the library sources in its root directory,
-# which we symlink file by file (see bn_s_mp_rand_platform.c.patch for the
-# one source file that we had to patch).
+# which we symlink file by file (see README-DEV for source files that we had
+# to patch).
 #
 lib{tommath}: libul{tommath}: {h c}{*}
 

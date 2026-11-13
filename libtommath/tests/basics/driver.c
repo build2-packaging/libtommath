@@ -47,6 +47,19 @@ int main ()
     assert (mp_prime_is_prime (&c, t, &p) == MP_OKAY && p == MP_NO);
   }
 
+  /* Convert doubles, which drops fractional part. Value 2^100 is exactly
+   * representable as double and doesn't fit into any built-in integer type.
+   */
+  {
+    assert (mp_set_double (&a, 1267650600228229401496703205376.0) == MP_OKAY);
+    assert (mp_2expt (&b, 100) == MP_OKAY);
+    assert (mp_cmp (&a, &b) == MP_EQ);
+
+    assert (mp_set_double (&a, -12345.75) == MP_OKAY);
+    assert (mp_to_radix (&a, s, sizeof (s), NULL, 10) == MP_OKAY);
+    assert (strcmp (s, "-12345") == 0);
+  }
+
   /* Error reporting.
    */
   assert (strcmp (mp_error_to_string (MP_MEM), "Out of heap") == 0);
