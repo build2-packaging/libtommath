@@ -24,6 +24,13 @@ if ($c.target.system == 'win32-msvc')
 if ($c.class == 'msvc')
   c.coptions += /wd4003
 
+# Signed integer accessors (MP_GET_SIGNED(), MP_SET_SIGNED()) negate
+# unsigned values to get magnitude of negative numbers, which MSVC warns
+# about (C4146). Upstream disables this warning as well (see makefile.msvc).
+#
+if ($c.class == 'msvc')
+  c.coptions += /wd4146
+
 if ($c.target.system == 'mingw32')
   c.loptions += -Wl,--export-all-symbols
 
