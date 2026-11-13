@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libtommath/
+}
+
+export $out_root/libtommath/$import.target

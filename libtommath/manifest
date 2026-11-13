@@ -1,0 +1,14 @@
+: 1
+name: libtommath
+version: 1.3.0-a.0.z
+language: c
+summary: This is the git repository for [LibTomMath](http://www
+license: other: proprietary ; Not free/open source.
+description-file: README.md
+package-description-file: PACKAGE-README.md
+url: https://example.org/upstream
+email: upstream@example.org
+package-url: https://github.com/build2-packaging/libtommath
+package-email: packaging@build2.org ; Mailing list.
+depends: * build2 >= 0.18.0
+depends: * bpkg >= 0.18.0

@@ -1,0 +1,9 @@
+# Generated DLL symbol-exporting file.
+#
+tommath.def
+
+# Unit test executables and Testscript output directories
+# (can be symlinks).
+#
+*.test
+test-*.test

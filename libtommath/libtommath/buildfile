@@ -1,0 +1,60 @@
+intf_libs = # Interface dependencies.
+impl_libs = # Implementation dependencies.
+#import xxxx_libs += libhello%lib{hello}
+
+./: lib{tommath}: libul{tommath}: {h c}{** -**.test...} $impl_libs $intf_libs
+
+libs{tommath}: def{tommath}: include = ($c.target.system == 'win32-msvc')
+def{tommath}: libul{tommath}
+
+# Unit tests.
+#
+exe{*.test}:
+{
+  test = true
+  install = false
+}
+
+for t: c{**.test...}
+{
+  d = $directory($t)
+  n = $name($t)...
+
+  ./: $d/exe{$n}: $t $d/h{+$n} $d/testscript{+$n}
+  $d/exe{$n}: libul{tommath}: bin.whole = false
+}
+
+# Build options.
+#
+out_pfx = [dir_path] $out_root/libtommath/
+src_pfx = [dir_path] $src_root/libtommath/
+
+c.poptions =+ "-I$out_pfx" "-I$src_pfx"
+
+if ($c.target.system == 'mingw32')
+  c.loptions += -Wl,--export-all-symbols
+
+# Export options.
+#
+lib{tommath}:
+{
+  c.export.poptions = "-I$out_pfx" "-I$src_pfx"
+  c.export.libs = $intf_libs
+}
+
+# For pre-releases use the complete version to make sure they cannot
+# be used in place of another pre-release or the final version. See
+# the version module for details on the version.* variable values.
+#
+if $version.pre_release
+  lib{tommath}: bin.lib.version = "-$version.project_id"
+else
+  lib{tommath}: bin.lib.version = "-$version.major.$version.minor"
+
+# Install recreating subdirectories.
+#
+h{*}:
+{
+  install         = include/
+  install.subdirs = true
+}

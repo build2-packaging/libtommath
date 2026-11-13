@@ -1,0 +1,3 @@
+import libs = libtommath%lib{tommath}
+
+exe{driver}: {h c}{**} $libs testscript{**}
