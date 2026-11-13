@@ -1,7 +1,9 @@
-# libtommath - This is the git repository for [LibTomMath](http://www
+# libtommath - Multiple-precision integer arithmetic C library
 
-This is a `build2` package for the [`<UPSTREAM-NAME>`](https://<UPSTREAM-URL>)
-C library. It provides <SUMMARY-OF-FUNCTIONALITY>.
+This is a `build2` package for the
+[`libtommath`](https://github.com/libtom/libtommath) C library. It provides a
+portable implementation of number theoretic multiple-precision integer (MPI)
+arithmetic.
 
 
 ## Usage
@@ -10,33 +12,19 @@ To start using `libtommath` in your project, add the following `depends`
 value to your `manifest`, adjusting the version constraint as appropriate:
 
 ```
-depends: libtommath ^<VERSION>
+depends: libtommath ^1.3.0
 ```
 
 Then import the library in your `buildfile`:
 
 ```
-import libs = libtommath%lib{<TARGET>}
+import libs = libtommath%lib{tommath}
 ```
 
+The library interface is declared in the `<tommath.h>` header.
 
-## Importable targets
-
-This package provides the following importable targets:
-
-```
-lib{<TARGET>}
-```
-
-<DESCRIPTION-OF-IMPORTABLE-TARGETS>
-
-
-## Configuration variables
-
-This package provides the following configuration variables:
-
-```
-[bool] config.libtommath.<VARIABLE> ?= false
-```
-
-<DESCRIPTION-OF-CONFIG-VARIABLES>
+Note that when using the shared library built with MSVC, the multiplication
+cutoff variables (`KARATSUBA_MUL_CUTOFF`, `KARATSUBA_SQR_CUTOFF`,
+`TOOM_MUL_CUTOFF`, and `TOOM_SQR_CUTOFF`) are only accessible if they are
+declared with `__declspec(dllimport)`, which `<tommath.h>` does not do. All
+the library functions are accessible.
