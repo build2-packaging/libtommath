@@ -1,0 +1,6 @@
+: 1
+name: libtommath
+version: 1.3.0
+language: c
+summary: Multiple-precision integer arithmetic C library
+license: Unlicense; The Unlicense (public domain).
